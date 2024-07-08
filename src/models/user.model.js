@@ -57,16 +57,42 @@ userSchema.pre("save", async function(next) {
     next();
 });
 
+/**
+ * Checks if the provided password matches the hashed password in the database.
+ *
+ * @param {string} password - The password to be compared.
+ * @return {Promise<boolean>} A promise that resolves to true if the password matches,
+ *                            false otherwise.
+ */
 userSchema.methods.isPasswordCorrect = async function(password) {
+    // Use bcrypt's compare method to compare the provided password with the hashed password in the database.
+    // The compare method takes in two parameters: the password to be compared and the hashed password.
+    // It returns a promise that resolves to true if the passwords match, false otherwise.
     return await bcrypt.compare(password, this.password);
 }
 
+    /**
+     * Generates an access token for the user.
+     *
+     * @return {string} The generated access token.
+     */
 userSchema.methods.generateAccessToken = function() {
     return jwt.sign({_id: this._id, username: this.username, email: this.email}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: process.env.ACCESS_TOKEN_EXPIRY});
 }
 
+    /**
+     * Generates a refresh token for the user.
+     *
+     * @return {string} The generated refresh token.
+     */
 userSchema.methods.generateRefreshToken = function() {
-    return jwt.sign({_id: this._id, username: this.username, email: this.email}, process.env.JWT_SECRET, {expiresIn: "7d"});
+    // Use jwt.sign method to generate a refresh token.
+    // The method takes in three parameters: the payload, the secret key, and the expiration time.
+    // The payload is an object that contains the user's id.
+    // The secret key is stored in the environment variable REFRESH_TOKEN_SECRET.
+    // The expiration time is stored in the environment variable REFRESH_TOKEN_EXPIRY.
+    // The method returns a promise that resolves to the generated refresh token.
+    return jwt.sign({_id: this._id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: process.env.REFRESH_TOKEN_EXPIRY});
 }
 
 export const User = mongoose.model("User", userSchema)
