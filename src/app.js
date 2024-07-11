@@ -20,6 +20,20 @@ app.use(express.urlencoded({
     limit:"16kb"
 }));
 
+app.use((err, req, res, next) => {
+    if (err instanceof ApiError) {
+        res.status(err.statusCode).json(err.toJSON());
+    } else {
+        // Handle unknown errors
+        console.error(err);
+        res.status(500).json({
+            statusCode: 500,
+            message: "Internal Server Error",
+            success: false
+        });
+    }
+});
+
 // this middleware us used to store assets in public folder
 app.use(express.static("public"));
 
@@ -28,7 +42,6 @@ app.use(cookieParser());
 
 // Routes => all the routes are stored in this file
 import userRouter from "./routes/user.router.js";
-
 
 // Routes declaration
 app.use("/api/v1/users", userRouter);
